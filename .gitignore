@@ -5,3 +5,4 @@ __pycache__/
 .env
 pipeline.log
 data/processed/*
+data/raw/*
