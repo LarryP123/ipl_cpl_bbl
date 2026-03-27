@@ -1,23 +1,31 @@
 # Cricket Data Pipeline
 
-A Python data pipeline that extracts, transforms, and stores cricket match data for analysis.
+This project is an end-to-end ETL and API service that ingests live cricket match data, transforms nested API responses into structured records, stores them in SQLite, and exposes them through FastAPI endpoints.
 
 ## Features
-- Extracts cricket match data
-- Calculates run rate and scoring classification
-- Stores data in SQLite database
-- Logs pipeline execution
+- Ingests live cricket data from external API
+- End-to-end ETL pipeline (extract, transform, load)
+- FastAPI service for querying data
+- Filterable API queries (e.g. by player, team)
+- Multiple load strategies: overwrite, append, upsert
+
+## Architecture
+Cricket API → Extract → Transform → Load → SQLite → FastAPI
 
 ##  Tech Stack
 - Python
 - Pandas
 - SQLAlchemy
 - SQLite
+- FastAPI
+- Uvicorn
+- dotenv
 
 ## Project Structure
 
 my_data_pipeline/
 ├── src/
+│ ├── api.py
 │ ├── extract.py
 │ ├── transform.py
 │ ├── load.py
@@ -31,9 +39,10 @@ my_data_pipeline/
 ##  How to Run
 
 ```bash
-git clone <your-repo-url>
-cd my_data_pipeline
-python -m venv .venv
-source .venv/bin/activate
 pip install -r requirements.txt
-python src/main.py
+python src/main.py --mode upsert
+uvicorn src.api:app --reload
+```
+## Example API Endpoints
+GET /players
+GET /players?team=India

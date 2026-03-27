@@ -1,4 +1,5 @@
 import logging
+import argparse
 from pathlib import Path
 
 from extract import extract_data
@@ -18,19 +19,33 @@ logging.basicConfig(
     ]
 )
 
-def run_pipeline():
-    logging.info("Processing cricket match data")
+def run_pipeline(mode: str = "replace"):
+    try:
+        logging.info("Fetching real cricket API data")
 
-    df = extract_data()
-    logging.info("Extracted %s rows", len(df))
+        df = extract_data()
+        logging.info("Extracted %s raw rows", len(df))
 
-    cleaned = transform_data(df)
-    logging.info("Transformed %s rows", len(cleaned))
+        cleaned = transform_data(df)
+        logging.info("Transformed %s rows", len(cleaned))
 
-    load_data(cleaned, str(DB_FILE))
-    logging.info("Loaded data into SQLite database at %s", DB_FILE)
+        load_data(cleaned, str(DB_FILE), mode=mode)
+        logging.info("Loaded data into SQLite at %s using mode=%s", DB_FILE, mode)
 
-    print("Pipeline complete!")
+        print(f"Pipeline complete using mode='{mode}'")
+
+    except Exception as e:
+        logging.exception("Pipeline failed: %s", e)
+        print(f"Pipeline failed: {e}")
 
 if __name__ == "__main__":
-    run_pipeline()
+    parser = argparse.ArgumentParser(description="Run cricket ETL pipeline")
+    parser.add_argument(
+        "--mode",
+        choices=["replace", "append", "upsert"],
+        default="replace",
+        help="Database write mode"
+    )
+    args = parser.parse_args()
+
+    run_pipeline(mode=args.mode)
