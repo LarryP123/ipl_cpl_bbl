@@ -1,8 +1,1 @@
-.venv/
-__pycache__/
-*.pyc
-*.db
-.env
-pipeline.log
-data/processed/*
-data/raw/*
+data/
