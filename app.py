@@ -17,17 +17,20 @@ FILE_MAP = {
     "overall": "01_best_overall_batters.csv",
     "by_league": "02_best_by_league.csv",
     "high_volume": "03_high_volume_batters.csv",
-    "consistency_aggression": "04_consistency_plus_aggression.csv",
+    "consistency_aggression": "04_efficiency_plus_aggression.csv",
     "efficiency_aggression": "04_efficiency_plus_aggression.csv",
     "boundary": "05_boundary_hitters.csv",
     "explosive": "06_explosive_hitters.csv",
     "anchors": "07_reliable_anchors.csv",
     "underrated": "08_underrated_players.csv",
     "multi_league": "09_multi_league_performers.csv",
+
+    # Fix these mismatches
     "league_env": "10_league_environment.csv",
     "roles": "11_role_breakdown.csv",
     "consistent": "12_most_consistent_players.csv",
 }
+
 
 
 @st.cache_data
