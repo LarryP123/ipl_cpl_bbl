@@ -1,10 +1,10 @@
-player_name,competition,innings,total_runs,avg_runs,strike_rate,consistency_score
-Babar Azam,PSL,11,569,51.73,142.61,55.82
-Virat Kohli,IPL,15,657,43.8,144.71,52.74
-KL Rahul,IPL,13,539,41.46,149.72,47.52
-Shai Hope,CPL,12,491,40.92,127.2,45.58
-Mohammad Naim,BPL,13,482,37.08,142.18,42.49
-Rassie van der Dussen,SA20,11,393,35.73,129.7,38.56
-Rubin Hermann,SA20,9,333,37.0,128.08,37.0
-Cooper Connolly,BBL,10,351,35.1,131.46,36.55
-Tim Seifert,LPL,8,302,37.75,129.06,36.02
+player_name,competition,season_label,innings,total_runs,avg_runs,strike_rate,consistency_score
+Babar Azam,PSL,2024,11,569,51.73,142.61,55.82
+Virat Kohli,IPL,2025,15,657,43.8,144.71,52.74
+KL Rahul,IPL,2025,13,539,41.46,149.72,47.52
+Shai Hope,CPL,2025,12,491,40.92,127.2,45.58
+Mohammad Naim,BPL,2024-25,13,482,37.08,142.18,42.49
+Rassie van der Dussen,SA20,2025,11,393,35.73,129.7,38.56
+Rubin Hermann,SA20,2025,9,333,37.0,128.08,37.0
+Cooper Connolly,BBL,2024-25,10,351,35.1,131.46,36.55
+Tim Seifert,LPL,2024,8,302,37.75,129.06,36.02

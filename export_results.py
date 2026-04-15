@@ -1,44 +1,67 @@
+from __future__ import annotations
+
+import logging
 import sqlite3
+
 import pandas as pd
-import os
 
-DB_PATH = "data/cricket.db"
-CREATE_SQL = "sql/00_create_analytics_layer.sql"
+from src.config import Settings, get_settings
+from src.logging_utils import configure_logging
+from src.utils import load_sql, write_json
+from src.validate import validate_settings
 
-SQL_FILES = {
-    "01_best_overall_batters": "sql/01_best_overall_batters.sql",
-    "02_best_by_league": "sql/02_best_by_league.sql",
-    "03_high_volume_batters": "sql/03_high_volume_batters.sql",
-    "04_efficiency_plus_aggression": "sql/04_efficiency_plus_aggression.sql",
-    "05_boundary_hitters": "sql/05_boundary_hitters.sql",
-    "06_explosive_hitters": "sql/06_explosive_hitters.sql",
-    "07_reliable_anchors": "sql/07_reliable_anchors.sql",
-    "08_underrated_players": "sql/08_underrated_players.sql",
-    "09_multi_league_performers": "sql/09_multi_league_performers.sql",
-    "10_league_environment": "sql/10_league_environment.sql",
-    "11_role_breakdown": "sql/11_role_breakdown.sql",
-    "12_most_consistent_players": "sql/12_most_consistent_players.sql",
-}
 
-OUTPUT_DIR = "exports"
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+logger = logging.getLogger(__name__)
 
-conn = sqlite3.connect(DB_PATH)
-cur = conn.cursor()
 
-with open(CREATE_SQL, "r") as f:
-    cur.executescript(f.read())
+def _drop_legacy_object(connection: sqlite3.Connection, name: str) -> None:
+    row = connection.execute(
+        "SELECT type FROM sqlite_master WHERE name = ?",
+        (name,),
+    ).fetchone()
+    if row is None:
+        return
 
-conn.commit()
+    object_type = row[0]
+    if object_type == "table":
+        connection.execute(f"DROP TABLE IF EXISTS {name}")
+    elif object_type == "view":
+        connection.execute(f"DROP VIEW IF EXISTS {name}")
 
-for name, path in SQL_FILES.items():
+
+def run_exports(settings: Settings | None = None) -> dict:
+    configure_logging()
+    active_settings = settings or get_settings()
+    active_settings.ensure_directories()
+    validate_settings(active_settings)
+
+    connection = sqlite3.connect(active_settings.db_path)
+    exported_files: list[dict[str, str | int]] = []
+
     try:
-        with open(path, "r") as f:
-            query = f.read()
-        df = pd.read_sql_query(query, conn)
-        df.to_csv(os.path.join(OUTPUT_DIR, f"{name}.csv"), index=False)
-        print(f"Saved {name}.csv")
-    except Exception as e:
-        print(f"Failed {name}: {e}")
+        _drop_legacy_object(connection, "player_metrics")
+        connection.executescript(load_sql(active_settings.analytics_layer_sql))
 
-conn.close()
+        for export_name, sql_path in active_settings.export_queries.items():
+            query = load_sql(sql_path)
+            dataframe = pd.read_sql_query(query, connection)
+            output_path = active_settings.exports_dir / f"{export_name}.csv"
+            dataframe.to_csv(output_path, index=False)
+            exported_files.append(
+                {
+                    "name": export_name,
+                    "path": str(output_path),
+                    "rows": int(len(dataframe)),
+                }
+            )
+            logger.info("Exported %s (%s rows).", output_path.name, len(dataframe))
+    finally:
+        connection.close()
+
+    summary = {"exports": exported_files, "total_exports": len(exported_files)}
+    write_json(active_settings.reports_dir / "export_manifest.json", summary)
+    return summary
+
+
+if __name__ == "__main__":
+    run_exports()

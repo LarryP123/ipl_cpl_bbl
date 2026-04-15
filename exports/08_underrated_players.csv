@@ -1,13 +1,13 @@
-player_name,competition,innings,total_runs,avg_runs,strike_rate,batting_index,consistency_score
-Aiden Markram,IPL,12,444,37.0,150.51,5568.81,41.22
-Mohammad Naim,BPL,13,482,37.08,142.18,5271.7,42.49
-Joe Root,SA20,8,279,34.88,140.2,4889.51,33.28
-Ayush Badoni,IPL,10,323,32.3,149.54,4830.05,33.64
-Ajinkya Rahane,IPL,12,390,32.5,147.73,4801.14,36.2
-David Warner,BBL,12,405,33.75,141.61,4779.28,37.6
-Kusal Mendis,LPL,10,303,30.3,154.59,4684.13,31.55
-Saud Shakeel,PSL,8,275,34.38,135.47,4656.71,32.8
-Cooper Connolly,BBL,10,351,35.1,131.46,4614.27,36.55
-Sanju Samson,IPL,9,285,31.67,140.39,4445.81,31.67
-Sahibzada Farhan,PSL,8,266,33.25,133.67,4444.47,31.73
-Zakir Hasan,BPL,10,323,32.3,132.92,4293.37,33.64
+player_name,competition,season_label,innings,total_runs,avg_runs,strike_rate,batting_index,consistency_score
+Aiden Markram,IPL,2025,12,444,37.0,150.51,5568.81,41.22
+Mohammad Naim,BPL,2024-25,13,482,37.08,142.18,5271.7,42.49
+Joe Root,SA20,2025,8,279,34.88,140.2,4889.51,33.28
+Ayush Badoni,IPL,2025,10,323,32.3,149.54,4830.05,33.64
+Ajinkya Rahane,IPL,2025,12,390,32.5,147.73,4801.14,36.2
+David Warner,BBL,2024-25,12,405,33.75,141.61,4779.28,37.6
+Kusal Mendis,LPL,2024,10,303,30.3,154.59,4684.13,31.55
+Saud Shakeel,PSL,2024,8,275,34.38,135.47,4656.71,32.8
+Cooper Connolly,BBL,2024-25,10,351,35.1,131.46,4614.27,36.55
+Sanju Samson,IPL,2025,9,285,31.67,140.39,4445.81,31.67
+Sahibzada Farhan,PSL,2024,8,266,33.25,133.67,4444.47,31.73
+Zakir Hasan,BPL,2024-25,10,323,32.3,132.92,4293.37,33.64

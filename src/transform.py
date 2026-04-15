@@ -2,32 +2,28 @@ from __future__ import annotations
 
 import re
 
-from src.config import TARGET_COMPETITIONS
+from src.config import Settings, get_settings
+from src.utils import normalise_text
 
 
-def get_competition_metadata(series_name: str) -> dict:
-    name_lower = series_name.lower()
+def get_competition_metadata(
+    series_name: str,
+    settings: Settings | None = None,
+) -> dict[str, str | None]:
+    active_settings = settings or get_settings()
+    name_normalized = normalise_text(series_name)
 
-    for competition, config in TARGET_COMPETITIONS.items():
-        keyword_match = any(
-            keyword.lower() in name_lower
-            for keyword in config["keywords"]
-        )
-        season_match = any(
-            pattern.lower() in name_lower
-            for pattern in config["season_patterns"]
-        )
+    for competition, config in active_settings.target_competitions.items():
+        has_keyword = any(keyword in name_normalized for keyword in config.keywords)
+        has_season = any(pattern in name_normalized for pattern in config.season_patterns)
 
-        if keyword_match and season_match:
+        if has_keyword and has_season:
             return {
                 "competition": competition,
-                "season_label": config["season_label"],
+                "season_label": config.season_label,
             }
 
-    return {
-        "competition": None,
-        "season_label": None,
-    }
+    return {"competition": None, "season_label": None}
 
 
 def to_int(value):
@@ -56,20 +52,20 @@ def extract_name(value):
         return None
 
     if isinstance(value, str):
-        return value
+        return value.strip() or None
 
     if isinstance(value, dict):
-        return value.get("name") or value.get("teamName") or value.get("shortname")
+        return (
+            value.get("name")
+            or value.get("teamName")
+            or value.get("shortname")
+            or None
+        )
 
     return str(value)
 
 
 def extract_batting_team_from_inning_label(inning_label: str | None) -> str | None:
-    """
-    Examples:
-    - 'Chennai Super Kings Inning 1' -> 'Chennai Super Kings'
-    - 'Adelaide Strikers Inning 1' -> 'Adelaide Strikers'
-    """
     if not inning_label:
         return None
 
@@ -77,7 +73,11 @@ def extract_batting_team_from_inning_label(inning_label: str | None) -> str | No
     return cleaned or None
 
 
-def infer_bowling_team(batting_team: str | None, team_1: str | None, team_2: str | None) -> str | None:
+def infer_bowling_team(
+    batting_team: str | None,
+    team_1: str | None,
+    team_2: str | None,
+) -> str | None:
     if batting_team and team_1 and batting_team == team_1:
         return team_2
     if batting_team and team_2 and batting_team == team_2:
@@ -96,17 +96,19 @@ def parse_scorecard(
     bowling_rows: list[dict] = []
 
     scorecard = scorecard_data.get("scorecard", [])
+    if not isinstance(scorecard, list):
+        raise ValueError(f"Scorecard payload is not a list for match {match_id}")
 
-    for i, innings in enumerate(scorecard, start=1):
+    for innings_number, innings in enumerate(scorecard, start=1):
         inning_label = innings.get("inning")
         batting_team = extract_batting_team_from_inning_label(inning_label)
         bowling_team = infer_bowling_team(batting_team, team_1, team_2)
 
         innings_rows.append(
             {
-                "innings_id": f"{match_id}_{i}",
+                "innings_id": f"{match_id}_{innings_number}",
                 "match_id": match_id,
-                "innings_number": i,
+                "innings_number": innings_number,
                 "batting_team": batting_team,
                 "bowling_team": bowling_team,
                 "runs": to_int(innings.get("r")),
@@ -117,14 +119,21 @@ def parse_scorecard(
             }
         )
 
-        for j, batter in enumerate(innings.get("batting", []), start=1):
-            batter_name = extract_name(batter.get("batsman")) or extract_name(batter.get("name"))
+        batting_entries = innings.get("batting", [])
+        bowling_entries = innings.get("bowling", [])
 
+        if not isinstance(batting_entries, list) or not isinstance(bowling_entries, list):
+            raise ValueError(f"Scorecard sections are malformed for match {match_id}")
+
+        for batting_position, batter in enumerate(batting_entries, start=1):
+            batter_name = extract_name(batter.get("batsman")) or extract_name(
+                batter.get("name")
+            )
             batting_rows.append(
                 {
-                    "batting_id": f"{match_id}_{i}_bat_{j}",
+                    "batting_id": f"{match_id}_{innings_number}_bat_{batting_position}",
                     "match_id": match_id,
-                    "innings_number": i,
+                    "innings_number": innings_number,
                     "player_name": batter_name,
                     "team": batting_team,
                     "runs": to_int(batter.get("r")),
@@ -136,14 +145,15 @@ def parse_scorecard(
                 }
             )
 
-        for j, bowler in enumerate(innings.get("bowling", []), start=1):
-            bowler_name = extract_name(bowler.get("bowler")) or extract_name(bowler.get("name"))
-
+        for bowling_position, bowler in enumerate(bowling_entries, start=1):
+            bowler_name = extract_name(bowler.get("bowler")) or extract_name(
+                bowler.get("name")
+            )
             bowling_rows.append(
                 {
-                    "bowling_id": f"{match_id}_{i}_bowl_{j}",
+                    "bowling_id": f"{match_id}_{innings_number}_bowl_{bowling_position}",
                     "match_id": match_id,
-                    "innings_number": i,
+                    "innings_number": innings_number,
                     "player_name": bowler_name,
                     "team": bowling_team,
                     "overs": to_float(bowler.get("o")),

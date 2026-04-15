@@ -1,6 +1,7 @@
 SELECT
     player_name,
     competition,
+    season_label,
     innings,
     total_runs,
     avg_runs,
@@ -13,6 +14,6 @@ SELECT
         WHEN strike_rate >= 150 THEN 'Power Hitter'
         ELSE 'Balanced'
     END AS role
-FROM player_metrics
+FROM analytics_player_batting_summary
 WHERE innings >= 6
 ORDER BY competition, role, batting_index DESC;
